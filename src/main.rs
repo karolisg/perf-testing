@@ -83,7 +83,7 @@ async fn main() {
     // let brokers = matches.value_of("brokers").unwrap();
     // let group_id = matches.value_of("group-id").unwrap();
 
-    let topics = vec!["DozerTestServer.pgbench_accounts"];
+    let topics = vec!["DozerTestServer.public.pgbench_accounts"];
     let brokers = "localhost:9092";
     let group_id = "test";
     consume_and_print(brokers, group_id, &topics).await
