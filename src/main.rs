@@ -110,8 +110,8 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                     started = Instant::now();
                 }
 
-                if count % 1000 == 0 {
-                    info!("count: {}, elapsed: {}µs", count, started.elapsed().as_micros());
+                if count % 10000 == 0 {
+                    info!("count: {}, elapsed: {}µs, rate: {} ops/s", count, started.elapsed().as_micros(), count / started.elapsed().as_secs());
                 }
             }
         };
