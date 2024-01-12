@@ -81,6 +81,7 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
     // let topics = matches.values_of("topics").unwrap().collect::<Vec<&str>>();
     // let brokers = matches.value_of("brokers").unwrap();
     // let group_id = matches.value_of("group-id").unwrap();

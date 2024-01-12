@@ -9,3 +9,4 @@ edition = "2021"
 rdkafka = "0.36.1"
 tokio = { version = "1.35.1", features = ["rt", "rt-multi-thread", "macros"] }
 log = "0.4.20"
+env_logger = "0.10.1"
