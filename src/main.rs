@@ -81,7 +81,7 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                 };
 
                 let k = String::from_utf8(m.key().unwrap().to_vec()).unwrap();
-                let key = as_key!(k.clone(), k, 0);
+                let key = as_key!("test".to_string(), k, None);
                 let v = serde_json::from_str::<serde_json::Value>(payload).unwrap();
                 let after = v.get("after").unwrap();
                 let bins = vec![
