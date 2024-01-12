@@ -84,12 +84,12 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                 let key = as_key!(m.key().unwrap(), m.key().unwrap(), 0);
                 let v = serde_json::from_str::<serde_json::Value>(payload).unwrap();
                 let after = v.get("after").unwrap();
-                let bins = Bins::new(vec![
+                let bins = vec![
                     as_bin!("int", after.get("aid").unwrap().as_i64().unwrap()),
                     as_bin!("int", after.get("bid").unwrap().as_i64().unwrap()),
                     as_bin!("int", after.get("abalance").unwrap().as_i64().unwrap()),
-                    as_bin!("str", after.get("filter").unwrap().as_str().unwrap()),
-                ]);
+                    as_bin!("str", after.get("filter").unwrap().as_str().unwrap())
+                ];
                 client.put(&wpolicy, &key, &bins).unwrap();
 
                 if let Some(headers) = m.headers() {
