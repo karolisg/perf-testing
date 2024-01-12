@@ -1,0 +1,11 @@
+[package]
+name = "kafka-aerospike"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rdkafka = "0.36.1"
+tokio = { version = "1.35.1", features = ["rt", "rt-multi-thread", "macros"] }
+log = "0.4.20"
