@@ -66,6 +66,7 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
 
     let wpolicy = WritePolicy::default();
 
+    let mut count = 0;
     loop {
         match consumer.recv().await {
             Err(e) => warn!("Kafka error: {}", e),
@@ -78,8 +79,6 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                         ""
                     }
                 };
-                info!("key: '{:?}', payload: '{}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
-                      m.key(), payload, m.topic(), m.partition(), m.offset(), m.timestamp());
 
                 let k = String::from_utf8(m.key().unwrap().to_vec()).unwrap();
                 let key = as_key!(k.clone(), k, 0);
@@ -99,6 +98,12 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                     }
                 }
                 consumer.commit_message(&m, CommitMode::Async).unwrap();
+
+                count += 1;
+
+                if count % 1000 == 0 {
+                    info!("count: {}", count);
+                }
             }
         };
     }
