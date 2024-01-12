@@ -52,6 +52,8 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
         .subscribe(&topics.to_vec())
         .expect("Can't subscribe to specified topics");
 
+    info!("Starting consumer loop");
+
     loop {
         match consumer.recv().await {
             Err(e) => warn!("Kafka error: {}", e),
