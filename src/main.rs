@@ -1,4 +1,5 @@
 use std::env;
+use std::time::Instant;
 use log::{info, warn};
 
 use rdkafka::client::ClientContext;
@@ -67,6 +68,7 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
     let wpolicy = WritePolicy::default();
 
     let mut count = 0;
+    let mut started = Instant::now();
     loop {
         match consumer.recv().await {
             Err(e) => warn!("Kafka error: {}", e),
@@ -101,8 +103,12 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
 
                 count += 1;
 
+                if count == 1 {
+                    started = Instant::now();
+                }
+
                 if count % 1000 == 0 {
-                    info!("count: {}", count);
+                    info!("count: {}, elapsed: {}µs", count, started.elapsed().as_micros());
                 }
             }
         };
