@@ -1,3 +1,4 @@
+use std::env;
 use log::{info, warn};
 
 use rdkafka::client::ClientContext;
@@ -8,6 +9,9 @@ use rdkafka::error::KafkaResult;
 use rdkafka::message::{Headers, Message};
 use rdkafka::topic_partition_list::TopicPartitionList;
 use rdkafka::util::get_rdkafka_version;
+
+use aerospike::{as_bin, as_key, Bins, Client, ClientPolicy, ReadPolicy, WritePolicy};
+use aerospike::operations;
 
 // A context can be used to change the behavior of producers and consumers by adding callbacks
 // that will be executed by librdkafka.
@@ -43,7 +47,7 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
         .set("session.timeout.ms", "6000")
         .set("enable.auto.commit", "true")
         //.set("statistics.interval.ms", "30000")
-        //.set("auto.offset.reset", "smallest")
+        .set("auto.offset.reset", "smallest")
         .set_log_level(RDKafkaLogLevel::Debug)
         .create_with_context(context)
         .expect("Consumer creation failed");
@@ -53,6 +57,14 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
         .expect("Can't subscribe to specified topics");
 
     info!("Starting consumer loop");
+
+    let cpolicy = ClientPolicy::default();
+    let hosts = env::var("AEROSPIKE_HOSTS")
+        .unwrap_or(String::from("127.0.0.1:3000"));
+    let client = Client::new(&cpolicy, &hosts)
+        .expect("Failed to connect to cluster");
+
+    let wpolicy = WritePolicy::default();
 
     loop {
         match consumer.recv().await {
@@ -68,6 +80,18 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                 };
                 info!("key: '{:?}', payload: '{}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
                       m.key(), payload, m.topic(), m.partition(), m.offset(), m.timestamp());
+
+                let key = as_key!(m.key().unwrap(), m.key().unwrap(), 0);
+                let v = serde_json::from_str::<serde_json::Value>(payload).unwrap();
+                let after = v.get("after").unwrap();
+                let bins = Bins::new(vec![
+                    as_bin!("int", after.get("aid").unwrap().as_i64().unwrap()),
+                    as_bin!("int", after.get("bid").unwrap().as_i64().unwrap()),
+                    as_bin!("int", after.get("abalance").unwrap().as_i64().unwrap()),
+                    as_bin!("str", after.get("filter").unwrap().as_str().unwrap()),
+                ]);
+                client.put(&wpolicy, &key, &bins).unwrap();
+
                 if let Some(headers) = m.headers() {
                     for header in headers.iter() {
                         info!("  Header {:#?}: {:?}", header.key, header.value);
