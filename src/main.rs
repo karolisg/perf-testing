@@ -65,6 +65,9 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
     let client = Client::new(&cpolicy, &hosts)
         .expect("Failed to connect to cluster");
 
+    let namespace = env::var("AEROSPIKE_NAMESPACE")
+        .unwrap_or(String::from("test"));
+
     let wpolicy = WritePolicy::default();
 
     let mut count = 0;
@@ -83,7 +86,7 @@ async fn consume_and_print(brokers: &str, group_id: &str, topics: &[&str]) {
                 };
 
                 let k = String::from_utf8(m.key().unwrap().to_vec()).unwrap();
-                let key = as_key!("test".to_string(), "set".to_string(), k);
+                let key = as_key!(namespace.clone(), "set".to_string(), k);
                 let v = serde_json::from_str::<serde_json::Value>(payload).unwrap();
                 let after = v.get("after").unwrap();
                 let bins = vec![
